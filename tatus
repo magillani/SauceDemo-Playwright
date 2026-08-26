@@ -1,0 +1,140 @@
+[1mdiff --git a/tests/Inventory/Inventory.spec.ts b/tests/Inventory/Inventory.spec.ts[m
+[1mindex 6aafb08..ca44b53 100644[m
+[1m--- a/tests/Inventory/Inventory.spec.ts[m
+[1m+++ b/tests/Inventory/Inventory.spec.ts[m
+[36m@@ -16,7 +16,7 @@[m [mtest.describe('Inventory - Positive Scenarios', () => {[m
+         await page.getByRole('textbox', { name: 'Username' }).fill(validUsername);  // Enter the valid username      [m
+         await page.getByPlaceholder('Password').fill(validPassword);  // Enter the valid password[m
+         await page.getByRole('button', { name: 'Login' }).click();  // Click the Login button[m
+[31m-        await expect(page).toHaveURL(inventoryURL);  // Verify that the user is redirected to the inventory page[m
+[32m+[m
+         await expect(page.getByText('Products', { exact: true })).toBeVisible();  // Verify that the Products heading is visible[m
+     });[m
+ [m
+[36m@@ -134,24 +134,46 @@[m [mtest.describe('Inventory - Positive Scenarios', () => {[m
+ [m
+     test('PW-020 Verify adding one product to cart..', async ({ page }) => {[m
+ [m
+[31m-        await expect(page).toHaveURL(/inventory-item/); // Verify product detail page opens[m
+[32m+[m[32m        // Get the first product[m
+[32m+[m[32m        const product = page.locator('[data-test="inventory-item"]').first();[m
+[32m+[m
+[32m+[m[32m        // NOW verify user is on the detail inventory page.[m
+[32m+[m[32m        await expect(page).toHaveURL(inventoryURL);[m
+ [m
+[31m-        const productName = page.locator('[data-test="inventory-item-name"]');[m
+[31m-        const ProductDescription = page.locator('[data-test="inventory-item-desc"]');[m
+[31m-        const ProductPrice = page.locator('[data-test="inventory-item-price"]');[m
+[31m-        const ProductImage = page.getByRole('img', { name: 'Sauce Labs Backpack' });[m
+[32m+[m[32m        // Get product details from the Inventory page[m
+[32m+[m[32m        const productName = product.locator('[data-test="inventory-item-name"]');[m
+[32m+[m[32m        const ProductNameText = await productName.innerText();[m
+[32m+[m[32m        const ProductDescription = product.locator('[data-test="inventory-item-desc"]');[m
+[32m+[m[32m        const ProductDescriptionText = await ProductDescription.innerText();[m
+[32m+[m[32m        const ProductPrice = product.locator('[data-test="inventory-item-price"]');[m
+[32m+[m[32m        const ProductPriceText = await ProductPrice.innerText();[m
+[32m+[m[32m        const ProductImage = product.getByRole('img', { name: 'Sauce Labs Backpack' });[m
+[32m+[m
+[32m+[m[32m        //Verify the product image is available[m
+         await expect(ProductImage).toBeVisible();[m
+[32m+[m
+[32m+[m[32m        //Click the first product detail page[m
+         await productName.first().click();[m
+ [m
+[32m+[m[32m        // Verify product detail page is opened[m
+[32m+[m[32m        await expect(page).toHaveURL(/inventory-item/);[m
+[32m+[m
+[32m+[m[32m        // Verify product Name, Description and price is visible[m
+[32m+[m[32m        await expect(productName).toBeVisible();[m
+[32m+[m[32m        await expect(ProductDescription).toBeVisible();[m
+[32m+[m[32m        await expect(ProductPrice).toBeVisible();[m
+[32m+[m
+ [m
+         // Verify the 'Add to Cart' button is visibale[m
+         const AddToCartBtn = page.getByRole('button', { name: 'Add to cart' });[m
+         await expect(AddToCartBtn).toBeVisible();[m
+[32m+[m[32m        await expect(AddToCartBtn).toBeEnabled();[m
+         await AddToCartBtn.click();[m
+ [m
+[31m-        // Verify the Once the product is added to the cart, The 'Add to Ccart' shouldn't be visible[m
+[32m+[m[32m        // Verify once the product is added to the cart, The 'Add to Cart' shouldn't be visible[m
+         await expect(AddToCartBtn).toBeHidden();[m
+ [m
+[32m+[m
+         //Verify Once Product is added to Card, A Remove button shoud be visible and clickable[m
+         const RemoveBtn = page.getByRole('button', { name: 'Remove' });[m
+         await expect(RemoveBtn).toHaveText('Remove');[m
+[36m@@ -163,20 +185,106 @@[m [mtest.describe('Inventory - Positive Scenarios', () => {[m
+         const CartIcon = page.locator('[data-test="shopping-cart-link"]');[m
+         await expect(CartIcon).toBeVisible();[m
+         await expect(CartIcon).toHaveText('1');[m
+[32m+[m
+[32m+[m[32m        // Open My Cart screen.[m
+         await CartIcon.click();[m
+ [m
+         // Verify the Cart Page Opens successfully[m
+         await expect(page).toHaveURL('https://www.saucedemo.com/cart.html');[m
+[31m-        const CartTitle = expect(page.getByText('Your Cart'));[m
+[31m-        expect(CartTitle).toContain('Your Cart');[m
+ [m
+[31m-        const CartProductName = page.getByText('Sauce Labs Backpack');[m
+[31m-        const CartProdctDescription = page.locator('[data-test="inventory-item-desc"]');[m
+[31m-        const CartProductPrice = page.locator('[data-test="inventory-item-price"]');[m
+[32m+[m[32m        /* await expect(page.getByText('Your Cart')).toBeVisible(); */[m
+[32m+[m[32m        await expect(page.getByText('Your Cart', { exact: true })).toBeVisible();[m
+[32m+[m
+[32m+[m[32m        // Compare product details between Detail page and Cart[m
+[32m+[m[32m        const CartProductName = await page.getByText('Sauce Labs Backpack').innerText();[m
+[32m+[m[32m        const CartProdctDescription = await page.locator('[data-test="inventory-item-desc"]').innerText();[m
+[32m+[m[32m        const CartProductPrice = await page.locator('[data-test="inventory-item-price"]').innerText();[m
+[32m+[m
+[32m+[m[32m        expect(ProductNameText).toBe(CartProductName);[m
+[32m+[m[32m        expect(ProductDescriptionText).toBe(CartProdctDescription);[m
+[32m+[m[32m        expect(ProductPriceText).toBe(CartProductPrice);[m
+[32m+[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    test('PW-021 Verify Add all available products to cart.', async ({ page }) => {[m
+[32m+[m
+[32m+[m
+[32m+[m[32m        // NOW verify user is on the detail inventory page.[m
+[32m+[m[32m        await expect(page).toHaveURL(inventoryURL);[m
+[32m+[m
+[32m+[m[32m        const products = page.locator('[data-test="inventory-item"]');[m
+[32m+[m
+[32m+[m[32m        const productsToAdd = 3;[m
+[32m+[m
+[32m+[m[32m        for (const product of (await products.all()).slice(0, 3)) {[m
+[32m+[m[32m            await expect(product).toBeVisible();[m
+[32m+[m[32m            const addToCartBtn = product.getByRole('button', { name: 'Add to cart' });[m
+[32m+[m[32m            await expect(addToCartBtn).toBeVisible();[m
+[32m+[m[32m            await addToCartBtn.click();[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        const cartIcon = page.locator('[data-test="shopping-cart-link"]');[m
+[32m+[m
+[32m+[m
+[32m+[m[32m        // Verify cart badge shows 3[m
+[32m+[m[32m        await expect(cartIcon).toHaveText(productsToAdd.toString());[m
+[32m+[m
+[32m+[m[32m        // Open My Cart screen.[m
+[32m+[m[32m        await cartIcon.click();[m
+[32m+[m
+[32m+[m[32m        // Verify the Cart Page Opens successfully[m
+[32m+[m[32m        await expect(page).toHaveURL('https://www.saucedemo.com/cart.html');[m
+[32m+[m
+[32m+[m[32m        // Verify all products are present in Cart[m
+[32m+[m[32m        const cartProducts = page.locator('[data-test="inventory-item"]');[m
+[32m+[m
+[32m+[m
+[32m+[m[32m        const firstProduct = await page.locator('[data-test="inventory-item-name"]').nth(0).innerText();[m
+[32m+[m[32m        const secondProduct = await page.locator('[data-test="inventory-item-name"]').nth(1).innerText();[m
+[32m+[m[32m        const thirdProduct = await page.locator('[data-test="inventory-item-name"]').nth(2).innerText();[m
+[32m+[m
+[32m+[m[32m        await expect(cartProducts).toHaveCount(3);[m
+[32m+[m
+[32m+[m[32m        console.log('Products added to cart: 3');[m
+[32m+[m
+[32m+[m[32m        console.log(firstProduct, '\n', secondProduct, '\n', thirdProduct)[m
+[32m+[m
+[

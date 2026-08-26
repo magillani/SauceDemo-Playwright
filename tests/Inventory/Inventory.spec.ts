@@ -16,7 +16,7 @@ test.describe('Inventory - Positive Scenarios', () => {
         await page.getByRole('textbox', { name: 'Username' }).fill(validUsername);  // Enter the valid username      
         await page.getByPlaceholder('Password').fill(validPassword);  // Enter the valid password
         await page.getByRole('button', { name: 'Login' }).click();  // Click the Login button
-        await expect(page).toHaveURL(inventoryURL);  // Verify that the user is redirected to the inventory page
+
         await expect(page.getByText('Products', { exact: true })).toBeVisible();  // Verify that the Products heading is visible
     });
 
@@ -134,23 +134,45 @@ test.describe('Inventory - Positive Scenarios', () => {
 
     test('PW-020 Verify adding one product to cart..', async ({ page }) => {
 
-        await expect(page).toHaveURL(/inventory-item/); // Verify product detail page opens
+        // Get the first product
+        const product = page.locator('[data-test="inventory-item"]').first();
 
-        const productName = page.locator('[data-test="inventory-item-name"]');
-        const ProductDescription = page.locator('[data-test="inventory-item-desc"]');
-        const ProductPrice = page.locator('[data-test="inventory-item-price"]');
-        const ProductImage = page.getByRole('img', { name: 'Sauce Labs Backpack' });
+        // NOW verify user is on the detail inventory page.
+        await expect(page).toHaveURL(inventoryURL);
+
+        // Get product details from the Inventory page
+        const productName = product.locator('[data-test="inventory-item-name"]');
+        const ProductNameText = await productName.innerText();
+        const ProductDescription = product.locator('[data-test="inventory-item-desc"]');
+        const ProductDescriptionText = await ProductDescription.innerText();
+        const ProductPrice = product.locator('[data-test="inventory-item-price"]');
+        const ProductPriceText = await ProductPrice.innerText();
+        const ProductImage = product.getByRole('img', { name: 'Sauce Labs Backpack' });
+
+        //Verify the product image is available
         await expect(ProductImage).toBeVisible();
+
+        //Click the first product detail page
         await productName.first().click();
+
+        // Verify product detail page is opened
+        await expect(page).toHaveURL(/inventory-item/);
+
+        // Verify product Name, Description and price is visible
+        await expect(productName).toBeVisible();
+        await expect(ProductDescription).toBeVisible();
+        await expect(ProductPrice).toBeVisible();
 
 
         // Verify the 'Add to Cart' button is visibale
         const AddToCartBtn = page.getByRole('button', { name: 'Add to cart' });
         await expect(AddToCartBtn).toBeVisible();
+        await expect(AddToCartBtn).toBeEnabled();
         await AddToCartBtn.click();
 
-        // Verify the Once the product is added to the cart, The 'Add to Ccart' shouldn't be visible
+        // Verify once the product is added to the cart, The 'Add to Cart' shouldn't be visible
         await expect(AddToCartBtn).toBeHidden();
+
 
         //Verify Once Product is added to Card, A Remove button shoud be visible and clickable
         const RemoveBtn = page.getByRole('button', { name: 'Remove' });
@@ -163,20 +185,106 @@ test.describe('Inventory - Positive Scenarios', () => {
         const CartIcon = page.locator('[data-test="shopping-cart-link"]');
         await expect(CartIcon).toBeVisible();
         await expect(CartIcon).toHaveText('1');
+
+        // Open My Cart screen.
         await CartIcon.click();
 
         // Verify the Cart Page Opens successfully
         await expect(page).toHaveURL('https://www.saucedemo.com/cart.html');
-        const CartTitle = expect(page.getByText('Your Cart'));
-        expect(CartTitle).toContain('Your Cart');
 
-        const CartProductName = page.getByText('Sauce Labs Backpack');
-        const CartProdctDescription = page.locator('[data-test="inventory-item-desc"]');
-        const CartProductPrice = page.locator('[data-test="inventory-item-price"]');
+        /* await expect(page.getByText('Your Cart')).toBeVisible(); */
+        await expect(page.getByText('Your Cart', { exact: true })).toBeVisible();
 
-        expect(productName).toBe(await CartProductName.innerText());
-        expect(ProductDescription).toBe(await CartProdctDescription.innerText());
-        expect(ProductPrice).toBe(await CartProductPrice.innerText());
+        // Compare product details between Detail page and Cart
+        const CartProductName = await page.getByText('Sauce Labs Backpack').innerText();
+        const CartProdctDescription = await page.locator('[data-test="inventory-item-desc"]').innerText();
+        const CartProductPrice = await page.locator('[data-test="inventory-item-price"]').innerText();
+
+        expect(ProductNameText).toBe(CartProductName);
+        expect(ProductDescriptionText).toBe(CartProdctDescription);
+        expect(ProductPriceText).toBe(CartProductPrice);
+
+    });
+
+    test('PW-021 Verify Add all available products to cart.', async ({ page }) => {
+
+
+        // NOW verify user is on the detail inventory page.
+        await expect(page).toHaveURL(inventoryURL);
+
+        const products = page.locator('[data-test="inventory-item"]');
+
+        const productsToAdd = 3;
+
+        for (const product of (await products.all()).slice(0, 3)) {
+            await expect(product).toBeVisible();
+            const addToCartBtn = product.getByRole('button', { name: 'Add to cart' });
+            await expect(addToCartBtn).toBeVisible();
+            await addToCartBtn.click();
+        }
+
+        const cartIcon = page.locator('[data-test="shopping-cart-link"]');
+
+
+        // Verify cart badge shows 3
+        await expect(cartIcon).toHaveText(productsToAdd.toString());
+
+        // Open My Cart screen.
+        await cartIcon.click();
+
+        // Verify the Cart Page Opens successfully
+        await expect(page).toHaveURL('https://www.saucedemo.com/cart.html');
+
+        // Verify all products are present in Cart
+        const cartProducts = page.locator('[data-test="inventory-item"]');
+
+
+        const firstProduct = await page.locator('[data-test="inventory-item-name"]').nth(0).innerText();
+        const secondProduct = await page.locator('[data-test="inventory-item-name"]').nth(1).innerText();
+        const thirdProduct = await page.locator('[data-test="inventory-item-name"]').nth(2).innerText();
+
+        await expect(cartProducts).toHaveCount(3);
+
+        console.log('Products added to cart: 3');
+
+        console.log(firstProduct, '\n', secondProduct, '\n', thirdProduct)
+
+
+    });
+
+    test('PW-022 Verify to Add all available products to cart.', async ({ page }) => {
+
+
+        // NOW verify user is on the detail inventory page.
+        await expect(page).toHaveURL(inventoryURL);
+
+        const products = page.locator('[data-test="inventory-item"]');
+
+        const counts = await products.count();
+        console.log('The Total products are: ', counts);
+
+        for (const product of await products.all()) {
+            await expect(product).toBeVisible();
+            const addToCartBtn = product.getByRole('button', { name: 'Add to cart' });
+            await expect(addToCartBtn).toBeVisible();
+            await addToCartBtn.click();
+        }
+
+        const cartIcon = page.locator('[data-test="shopping-cart-link"]');
+
+        await expect(cartIcon).toBeVisible();
+        await expect(cartIcon).toHaveText(counts.toString());
+
+        // Open My Cart screen.
+        await cartIcon.click();
+
+        // Verify the Cart Page Opens successfully
+        await expect(page).toHaveURL('https://www.saucedemo.com/cart.html');
+
+        // Verify all products are present in Cart
+        const cartProducts = page.locator('[data-test="inventory-item"]');
+        await expect(cartProducts).toHaveCount(counts);
+        console.log('Products added to cart:', counts);
 
     });
 
