@@ -12,10 +12,8 @@ test.describe('Inventory - Positive Scenarios', () => {
         await page.getByRole('textbox', { name: 'Username' }).fill(validUsername);  // Enter the valid username      
         await page.getByPlaceholder('Password').fill(validPassword);  // Enter the valid password
         await page.getByRole('button', { name: 'Login' }).click();  // Click the Login button
-
         await expect(page.getByText('Products', { exact: true })).toBeVisible();  // Verify that the Products heading is visible
     });
-
 
     test('PW-013 Verify inventory page opens after login.', async ({ page }) => {
 
@@ -68,6 +66,7 @@ test.describe('Inventory - Positive Scenarios', () => {
 
     test('PW-017 Verify product descriptions are visible.', async ({ page }) => {
         const Products = page.locator('[data-test="inventory-item"]');
+
         // Verify that all product names are visible
         for (const product of await Products.all()) {
             const productName = product.locator('[data-test="inventory-item-name"]');
@@ -81,7 +80,6 @@ test.describe('Inventory - Positive Scenarios', () => {
     test('PW-018 Verify to Open a product detail page.', async ({ page }) => {
 
         const productName = page.locator('[data-test="inventory-item-name"]').first();
-
         await productName.click();
 
         // Verify product detail page opens
@@ -122,9 +120,6 @@ test.describe('Inventory - Positive Scenarios', () => {
 
         // Verify that the Products heading is visible
         await expect(page.getByText('Products', { exact: true })).toBeVisible();
-
-
-
     })
 
 
@@ -133,20 +128,20 @@ test.describe('Inventory - Positive Scenarios', () => {
         // Get the first product
         const product = page.locator('[data-test="inventory-item"]').first();
 
-        // NOW verify user is on the detail inventory page.
+        // Now verify the user is on the detail inventory page.
         await expect(page).toHaveURL(inventoryURL);
 
         // Get product details from the Inventory page
         const productName = product.locator('[data-test="inventory-item-name"]');
-        const ProductNameText = await productName.innerText();
-        const ProductDescription = product.locator('[data-test="inventory-item-desc"]');
-        const ProductDescriptionText = await ProductDescription.innerText();
-        const ProductPrice = product.locator('[data-test="inventory-item-price"]');
-        const ProductPriceText = await ProductPrice.innerText();
-        const ProductImage = product.getByRole('img', { name: 'Sauce Labs Backpack' });
+        const productNameText = await productName.innerText();
+        const productDescription = product.locator('[data-test="inventory-item-desc"]');
+        const productDescriptionText = await productDescription.innerText();
+        const productPrice = product.locator('[data-test="inventory-item-price"]');
+        const productPriceText = await productPrice.innerText();
+        const productImage = product.getByRole('img', { name: 'Sauce Labs Backpack' });
 
         //Verify the product image is available
-        await expect(ProductImage).toBeVisible();
+        await expect(productImage).toBeVisible();
 
         //Click the first product detail page
         await productName.first().click();
@@ -156,19 +151,17 @@ test.describe('Inventory - Positive Scenarios', () => {
 
         // Verify product Name, Description and price is visible
         await expect(productName).toBeVisible();
-        await expect(ProductDescription).toBeVisible();
-        await expect(ProductPrice).toBeVisible();
-
+        await expect(productDescription).toBeVisible();
+        await expect(productPrice).toBeVisible();
 
         // Verify the 'Add to Cart' button is visibale
-        const AddToCartBtn = page.getByRole('button', { name: 'Add to cart' });
-        await expect(AddToCartBtn).toBeVisible();
-        await expect(AddToCartBtn).toBeEnabled();
-        await AddToCartBtn.click();
+        const addToCartBtn = page.getByRole('button', { name: 'Add to cart' });
+        await expect(addToCartBtn).toBeVisible();
+        await expect(addToCartBtn).toBeEnabled();
+        await addToCartBtn.click();
 
         // Verify once the product is added to the cart, The 'Add to Cart' shouldn't be visible
-        await expect(AddToCartBtn).toBeHidden();
-
+        await expect(addToCartBtn).toBeHidden();
 
         //Verify Once Product is added to Card, A Remove button shoud be visible and clickable
         const removeBtn = page.getByRole('button', { name: 'Remove' });
@@ -176,14 +169,13 @@ test.describe('Inventory - Positive Scenarios', () => {
         await expect(removeBtn).toBeVisible();
         await expect(removeBtn).toBeEnabled();
 
-
         // Verify the Once the product is added to the cart, The 'Add to Ccart' should preview as '1' in the cart.
         const cartIcon = page.locator('[data-test="shopping-cart-link"]');
         await expect(cartIcon).toBeVisible();
         await expect(cartIcon).toHaveText('1');
 
         // Open My Cart screen.
-        await CartIcon.click();
+        await cartIcon.click();
 
         // Verify the Cart Page Opens successfully
         await expect(page).toHaveURL('https://www.saucedemo.com/cart.html');
@@ -192,24 +184,22 @@ test.describe('Inventory - Positive Scenarios', () => {
         await expect(page.getByText('Your Cart', { exact: true })).toBeVisible();
 
         // Compare product details between Detail page and Cart
-        const CartProductName = await page.getByText('Sauce Labs Backpack').innerText();
-        const CartProdctDescription = await page.locator('[data-test="inventory-item-desc"]').innerText();
-        const CartProductPrice = await page.locator('[data-test="inventory-item-price"]').innerText();
+        const cartProductName = await page.getByText('Sauce Labs Backpack').innerText();
+        const cartProdctDescription = await page.locator('[data-test="inventory-item-desc"]').innerText();
+        const cartProductPrice = await page.locator('[data-test="inventory-item-price"]').innerText();
 
-        expect(ProductNameText).toBe(CartProductName);
-        expect(ProductDescriptionText).toBe(CartProdctDescription);
-        expect(ProductPriceText).toBe(CartProductPrice);
+        expect(productNameText).toBe(cartProductName);
+        expect(productDescriptionText).toBe(cartProdctDescription);
+        expect(productPriceText).toBe(cartProductPrice);
 
     });
 
     test('PW-021 Verify Add all available products to cart.', async ({ page }) => {
 
-
-        // NOW verify user is on the detail inventory page.
+        // Now verify the user is on the detail inventory page.
         await expect(page).toHaveURL(inventoryURL);
 
         const products = page.locator('[data-test="inventory-item"]');
-
         const productsToAdd = 3;
 
         for (const product of (await products.all()).slice(0, 3)) {
@@ -220,7 +210,6 @@ test.describe('Inventory - Positive Scenarios', () => {
         }
 
         const cartIcon = page.locator('[data-test="shopping-cart-link"]');
-
 
         // Verify cart badge shows 3
         await expect(cartIcon).toHaveText(productsToAdd.toString());
@@ -233,8 +222,6 @@ test.describe('Inventory - Positive Scenarios', () => {
 
         // Verify all products are present in Cart
         const cartProducts = page.locator('[data-test="inventory-item"]');
-
-
         const firstProduct = await page.locator('[data-test="inventory-item-name"]').nth(0).innerText();
         const secondProduct = await page.locator('[data-test="inventory-item-name"]').nth(1).innerText();
         const thirdProduct = await page.locator('[data-test="inventory-item-name"]').nth(2).innerText();
@@ -242,20 +229,15 @@ test.describe('Inventory - Positive Scenarios', () => {
         await expect(cartProducts).toHaveCount(3);
 
         console.log('Products added to cart: 3');
-
         console.log(firstProduct, '\n', secondProduct, '\n', thirdProduct)
-
-
     });
 
     test('PW-022 Verify to Add all available products to cart.', async ({ page }) => {
 
-
-        // NOW verify user is on the detail inventory page.
+        // Now verify the user is on the detail inventory page.
         await expect(page).toHaveURL(inventoryURL);
 
         const products = page.locator('[data-test="inventory-item"]');
-
         const counts = await products.count();
         console.log('The Total products are: ', counts);
 
@@ -286,16 +268,15 @@ test.describe('Inventory - Positive Scenarios', () => {
 
     test('PW-023 Verify to Remove a product from inventory page.', async ({ page }) => {
 
-        // NOW verify user is on the detail inventory page.
+        // Now verify the user is on the detail inventory page.
         await expect(page).toHaveURL(inventoryURL);
 
         // Get the first product
         const product = page.locator('[data-test="inventory-item"]').first();
 
-        //Click the first product detail page
+        // click the first product detail page
         const productName = page.locator('[data-test="inventory-item-name"]');
         await productName.first().click();
-
 
         // Verify product detail page is opened
         await expect(page).toHaveURL(/inventory-item/);
@@ -318,7 +299,6 @@ test.describe('Inventory - Positive Scenarios', () => {
         // Open My Cart screen.
         await cartIcon.click();
 
-
         // Verify the Cart Page Opens successfully
         await expect(page).toHaveURL('https://www.saucedemo.com/cart.html');
 
@@ -334,10 +314,10 @@ test.describe('Inventory - Positive Scenarios', () => {
 
     test('PW-024 Sort products A to Z. ', async ({ page }) => {
 
-        // NOW verify user is on the detail inventory page.
+        // Now verify the user is on the detail inventory page.
         await expect(page).toHaveURL(inventoryURL);
 
-        //Click the sort dropdown
+        // click the sort dropdown.
         const sortByAZ = await page.locator('[data-test="product-sort-container"]').selectOption('az');
 
         // This is product locator
@@ -349,23 +329,84 @@ test.describe('Inventory - Positive Scenarios', () => {
         // Now we are sorting products, which we got from page
         const expectedNames = [...productNames].sort();
 
-
-        //  // Verify products are sorted A to Z
+        // Verify products are sorted A to Z
         expect(productNames).toEqual(expectedNames);
-
         console.log('Products are sorted as A to Z: ', productNames)
 
     });
 
+    test('PW-025 Verify to Sort products Z to A.', async ({ page }) => {
+
+        // Now verify the user is on the detail inventory page.
+        await expect(page).toHaveURL(inventoryURL);
+
+        // click the sort dropdown.
+        const sortByZA = await page.locator('[data-test="product-sort-container"]').selectOption('za');
+
+        // This is product locator
+        const products = page.locator('[data-test="inventory-item-name"]');
+
+        //Now Get product names using the locator, here gets the names from the page:
+        const productNames = await products.allInnerTexts();
+
+        // Now we are sorting products, which we got from page
+        const expectedNames = [...productNames].sort().reverse();
+
+        // Verify products are sorted Z to A
+        expect(productNames).toEqual(expectedNames);
+        console.log('Products are sorted as Z to A: ', productNames)
+    });
+
+    test('PW-026 Verify Sort products price low to high.', async ({ page }) => {
+
+        // Now verify the user is on the detail inventory page.
+        await expect(page).toHaveURL(inventoryURL);
+
+        // click the sort dropdown
+        const sortByLohi = await page.locator('[data-test="product-sort-container"]').selectOption('lohi');
+
+        // This is price locator
+        const prices = page.locator('[data-test="inventory-item-price"]');
+
+        // Now Get product product using the locator, here gets the names from the page:
+        const productPrices = await prices.allInnerTexts();
+        productPrices.map(price => Number(price.replace('$', '')));
+
+        // Now we are sorting products, which we got from page
+        const expectedPrices = [...productPrices].sort((a, b) => a - b);
+
+        // Verify products are sorted Low to High
+        expect(productPrices).toEqual(expectedPrices);
+        console.log('Prices are sorted as Low to High: ', productPrices)
+    });
+
+
+
+    test('PW-027 Verify to Sort products price from high to low.', async ({ page }) => {
+
+        // Now verify the user is on the detail inventory page.
+        await expect(page).toHaveURL(inventoryURL);
+
+        // click the sort dropdown
+        const sortByHilo = await page.locator('[data-test="product-sort-container"]').selectOption('hilo');
+
+        // This is price locator
+        const prices = page.locator('[data-test="inventory-item-price"]');
+
+        //Now Get product product using the locator, here gets the names from the page:
+
+        const productPrices = await prices.allInnerTexts();
+        productPrices.map(price => Number(price.replace('$', '')));
+
+        // Now we are sorting products, which we got from page
+        const expectedPrices = [...productPrices].sort((b, a) => b - a);
+
+        // Verify products are sorted High to low
+        expect(productPrices).toEqual(expectedPrices);
+        console.log('Prices are sorted as High to Low : ', productPrices)
+    });
+
+
+
 
 });
-
-
-
-
-
-
-
-//==============================
-// Negative Inventory Scenarios
-// ==============================
