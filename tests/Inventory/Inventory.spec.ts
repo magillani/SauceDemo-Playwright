@@ -507,8 +507,28 @@ test.describe('Inventory - Positive Scenarios', () => {
 
     test('PW-030 Verify to Refresh inventory and verify expected state.', async ({ page }) => {
 
+        await expect(page).toHaveURL(inventoryURL);
+
+        const products = page.locator('[data-test="inventory-item"]');
+        const productCountBeforeRefresh = await products.count();
+        const productNamesBeforeRefresh = await page.locator('[data-test="inventory-item-name"]').allInnerTexts();
+        const sortDropdown = page.locator('[data-test="product-sort-container"]');
+        const sortBeforeRefresh = await sortDropdown.inputValue();
+        const productNamesAfterRefresh = await page.locator('[data-test="inventory-item-name"]').allInnerTexts();
+
+        await page.reload();
+        await expect(page).toHaveURL(inventoryURL);
+
+        // Verify product count remains the same
+        await expect(products).toHaveCount(productCountBeforeRefresh);
+
+        // Verify product names remain the same
+        expect(productNamesAfterRefresh).toEqual(productNamesBeforeRefresh);
+
+        // Verify sort option remains the expected state
+        await expect(sortDropdown).toHaveValue(sortBeforeRefresh);
+
+        console.log('Inventory state is maintained after refresh.');
     });
-
-
 
 });
