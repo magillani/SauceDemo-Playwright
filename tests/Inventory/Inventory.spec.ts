@@ -1,9 +1,5 @@
 import { test, expect } from '@playwright/test';
 
-//==============================
-// Positive Inventory Scenarios
-// ==============================
-
 test.describe('Inventory - Positive Scenarios', () => {
 
     const validUsername = 'standard_user';
@@ -320,7 +316,7 @@ test.describe('Inventory - Positive Scenarios', () => {
         await expect(cartIcon).toHaveText('');
 
         // Open My Cart screen.
-        cartIcon.click();
+        await cartIcon.click();
 
 
         // Verify the Cart Page Opens successfully
@@ -329,7 +325,38 @@ test.describe('Inventory - Positive Scenarios', () => {
         /* await expect(page.getByText('Your Cart')).toBeVisible(); */
         await expect(page.getByText('Your Cart', { exact: true })).toBeVisible();
 
+        //Verify no product in the cart, once removed
+        const cartProducts = page.locator('[data-test="inventory-item"]');
+
+        await expect(cartProducts).toHaveCount(0);
+
     });
+
+    test('PW-024 Sort products A to Z. ', async ({ page }) => {
+
+        // NOW verify user is on the detail inventory page.
+        await expect(page).toHaveURL(inventoryURL);
+
+        //Click the sort dropdown
+        const sortByAZ = await page.locator('[data-test="product-sort-container"]').selectOption('az');
+
+        // This is product locator
+        const products = page.locator('[data-test="inventory-item-name"]');
+
+        //Now Get product names using the locator, here gets the names from the page:
+        const productNames = await products.allInnerTexts();
+
+        // Now we are sorting products, which we got from page
+        const expectedNames = [...productNames].sort();
+
+
+        //  // Verify products are sorted A to Z
+        expect(productNames).toEqual(expectedNames);
+
+        console.log('Products are sorted as A to Z: ', productNames)
+
+    });
+
 
 });
 
