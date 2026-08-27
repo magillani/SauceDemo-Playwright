@@ -132,7 +132,7 @@ test.describe('Inventory - Positive Scenarios', () => {
     })
 
 
-    test('PW-020 Verify adding one product to cart..', async ({ page }) => {
+    test('PW-020 Verify adding one product to cart.', async ({ page }) => {
 
         // Get the first product
         const product = page.locator('[data-test="inventory-item"]').first();
@@ -175,16 +175,16 @@ test.describe('Inventory - Positive Scenarios', () => {
 
 
         //Verify Once Product is added to Card, A Remove button shoud be visible and clickable
-        const RemoveBtn = page.getByRole('button', { name: 'Remove' });
-        await expect(RemoveBtn).toHaveText('Remove');
-        await expect(RemoveBtn).toBeVisible();
-        await expect(RemoveBtn).toBeEnabled();
+        const removeBtn = page.getByRole('button', { name: 'Remove' });
+        await expect(removeBtn).toHaveText('Remove');
+        await expect(removeBtn).toBeVisible();
+        await expect(removeBtn).toBeEnabled();
 
 
         // Verify the Once the product is added to the cart, The 'Add to Ccart' should preview as '1' in the cart.
-        const CartIcon = page.locator('[data-test="shopping-cart-link"]');
-        await expect(CartIcon).toBeVisible();
-        await expect(CartIcon).toHaveText('1');
+        const cartIcon = page.locator('[data-test="shopping-cart-link"]');
+        await expect(cartIcon).toBeVisible();
+        await expect(cartIcon).toHaveText('1');
 
         // Open My Cart screen.
         await CartIcon.click();
@@ -288,6 +288,49 @@ test.describe('Inventory - Positive Scenarios', () => {
 
     });
 
+    test('PW-023 Verify to Remove a product from inventory page.', async ({ page }) => {
+
+        // NOW verify user is on the detail inventory page.
+        await expect(page).toHaveURL(inventoryURL);
+
+        // Get the first product
+        const product = page.locator('[data-test="inventory-item"]').first();
+
+        //Click the first product detail page
+        const productName = page.locator('[data-test="inventory-item-name"]');
+        await productName.first().click();
+
+
+        // Verify product detail page is opened
+        await expect(page).toHaveURL(/inventory-item/);
+
+        // Verify the 'Add to Cart' button is visibale
+        const addToCartBtn = page.getByRole('button', { name: 'Add to cart' });
+        await expect(addToCartBtn).toBeVisible();
+        await addToCartBtn.click();
+
+        //Verify Once Product is added to Card, A Remove button shoud be visible and clickable
+        const removeBtn = page.getByRole('button', { name: 'Remove' });
+        await expect(removeBtn).toHaveText('Remove');
+        await expect(removeBtn).toBeVisible();
+        await expect(removeBtn).toBeEnabled();
+        await removeBtn.click();
+
+        const cartIcon = page.locator('[data-test="shopping-cart-link"]');
+        await expect(cartIcon).toHaveText('');
+
+        // Open My Cart screen.
+        cartIcon.click();
+
+
+        // Verify the Cart Page Opens successfully
+        await expect(page).toHaveURL('https://www.saucedemo.com/cart.html');
+
+        /* await expect(page.getByText('Your Cart')).toBeVisible(); */
+        await expect(page.getByText('Your Cart', { exact: true })).toBeVisible();
+
+    });
+
 });
 
 
@@ -299,13 +342,3 @@ test.describe('Inventory - Positive Scenarios', () => {
 //==============================
 // Negative Inventory Scenarios
 // ==============================
-
-test.describe('Inventory - Negative Scenarios', () => {
-
-    test('PW-115 Verify all.', async ({ page }) => {
-
-        // PW-015 steps will go here
-
-    });
-
-});
