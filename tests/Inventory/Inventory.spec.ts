@@ -143,7 +143,7 @@ test.describe('Inventory - Positive Scenarios', () => {
         //Verify the product image is available
         await expect(productImage).toBeVisible();
 
-        //Click the first product detail page
+        // Click the first product detail page
         await productName.first().click();
 
         // Verify product detail page is opened
@@ -406,6 +406,108 @@ test.describe('Inventory - Positive Scenarios', () => {
         console.log('Prices are sorted as High to Low : ', productPrices)
     });
 
+    test('PW-028 Verify to Add then remove the same product repeatedly.', async ({ page }) => {
+
+        // Get the first product
+        const product = page.locator('[data-test="inventory-item"]');
+
+        // Now verify the user is on the detail inventory page.
+        await expect(page).toHaveURL(inventoryURL);
+
+
+        // Click the first product detail page
+        const productName = product.locator('[data-test="inventory-item-name"]');
+        await productName.first().click();
+
+        // Verify product detail page is opened
+        await expect(page).toHaveURL(/inventory-item/);
+
+
+        // Verify the 'Add to Cart' button is visibale
+        const addToCartBtn = page.getByRole('button', { name: 'Add to cart' });
+        await expect(addToCartBtn).toBeVisible();
+        await expect(addToCartBtn).toBeEnabled();
+        await addToCartBtn.click();
+
+        // Verify the Once the product is added to the cart, The 'Add to Ccart' should preview as '1' in the cart.
+        const cartIcon = page.locator('[data-test="shopping-cart-link"]');
+        await expect(cartIcon).toBeVisible();
+        await expect(cartIcon).toHaveText('1');
+
+        //Verify Once Product is added to Card, A Remove button shoud be visible and clickable
+        const removeBtn = page.getByRole('button', { name: 'Remove' });
+        await expect(removeBtn).toHaveText('Remove');
+        await expect(removeBtn).toBeVisible();
+        await expect(removeBtn).toBeEnabled();
+        await removeBtn.click();
+
+        for (let i = 1; i <= 3; i++) {
+
+            // ADD
+            await addToCartBtn.click();
+
+            // Verify product was added
+            await expect(removeBtn).toBeVisible();
+            await expect(removeBtn).toBeEnabled();
+            await expect(cartIcon).toHaveText('1');
+
+            // REMOVE
+            await removeBtn.click();
+
+            // Verify product was removed
+            await expect(addToCartBtn).toBeVisible();
+            await expect(addToCartBtn).toBeEnabled();
+            await expect(cartIcon).toHaveText('');
+            //const addCartBtntitle = addToCartBtn.innerText();
+        }
+    });
+
+    test('PW-029 Verify to Remove all products from inventory.', async ({ page }) => {
+        const products = page.locator('[data-test="inventory-item"]');
+        const totalProducts = await products.count();
+
+
+        const cartIcon = page.locator('[data-test="shopping-cart-link"]');
+        const cartProducts = page.locator('[data-test="inventory-item"]');
+
+        await expect(page).toHaveURL(inventoryURL);
+
+
+        for (const product of await products.all()) {
+            const addToCartBtn = product.getByRole('button', { name: 'Add to cart' });
+            await expect(addToCartBtn).toBeVisible();
+            await addToCartBtn.click();
+        }
+
+        await expect(cartIcon).toHaveText(totalProducts.toString());
+        await cartIcon.click();
+
+        // Verify Cart page is opened
+        await expect(page).toHaveURL('https://www.saucedemo.com/cart.html');
+
+        // Verify all products are present in Cart
+        await expect(cartProducts).toHaveCount(totalProducts);
+        console.log(await expect(cartProducts).toHaveCount(totalProducts));
+
+        // Remove all products from Cart
+        while (await cartProducts.count() > 0) {
+            const removeBtn = cartProducts.first().getByRole('button', { name: 'Remove' });
+            await expect(removeBtn).toBeVisible();
+            await removeBtn.click();
+        }
+
+        // Verify Cart is empty
+        await expect(cartProducts).toHaveCount(0);
+
+        // Verify cart badge is no longer displayed
+        await expect(cartIcon).not.toContainText('1');
+
+
+    });
+
+    test('PW-030 Verify to Refresh inventory and verify expected state.', async ({ page }) => {
+
+    });
 
 
 
